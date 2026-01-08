@@ -3,9 +3,13 @@ import { GoogleGenAI, Type } from "@google/genai";
 
 const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+export interface AIResponse<T> {
+  data: T | null;
+  error: string | null;
+}
+
 export const geminiService = {
-  // Creating a personalized study plan is a complex reasoning task
-  async getSmartPlan(targetExam: string, remainingDays: number, weakTopics: string[]) {
+  async getSmartPlan(targetExam: string, remainingDays: number, weakTopics: string[]): Promise<AIResponse<any>> {
     const ai = getAI();
     const prompt = `Create a daily study plan for ${targetExam} with ${remainingDays} days remaining. Focus on improving these weak topics: ${weakTopics.join(', ')}. Return the response in a structured JSON format.`;
     
@@ -33,15 +37,20 @@ export const geminiService = {
           }
         }
       });
-      return JSON.parse(response.text || '{}');
-    } catch (e) {
+
+      const text = response.text;
+      if (!text) throw new Error("Empty response from AI");
+      return { data: JSON.parse(text), error: null };
+    } catch (e: any) {
       console.error('Gemini error:', e);
-      return null;
+      let message = "Failed to generate study plan. Please try again later.";
+      if (e.message?.includes("429")) message = "API Quota exceeded. Please wait a moment.";
+      if (e.message?.includes("fetch")) message = "Network error. Check your connection.";
+      return { data: null, error: message };
     }
   },
 
-  // Burnout analysis requires reasoning over student behavior data
-  async getBurnoutAnalysis(studyHours: number[], sleepHours: number[], accuracyTrend: number[]) {
+  async getBurnoutAnalysis(studyHours: number[], sleepHours: number[], accuracyTrend: number[]): Promise<AIResponse<any>> {
     const ai = getAI();
     const prompt = `Analyze this student data for burnout: Study hours per day: [${studyHours.join(', ')}], Sleep hours: [${sleepHours.join(', ')}], Accuracy trend: [${accuracyTrend.join(', ')}]. Provide status (Healthy/Overloaded/Warning) and suggestions.`;
     
@@ -61,15 +70,16 @@ export const geminiService = {
           }
         }
       });
-      return JSON.parse(response.text || '{}');
-    } catch (e) {
+      const text = response.text;
+      if (!text) throw new Error("Empty response from AI");
+      return { data: JSON.parse(text), error: null };
+    } catch (e: any) {
       console.error('Gemini error:', e);
-      return null;
+      return { data: null, error: "Burnout analysis failed. Our AI is resting." };
     }
   },
 
-  // Career prediction involves analysis of exam scores and academic outcomes
-  async predictCareer(expectedScore: number, examName: string) {
+  async predictCareer(expectedScore: number, examName: string): Promise<AIResponse<any>> {
     const ai = getAI();
     const prompt = `Based on a score of ${expectedScore} in ${examName}, predict 3 potential colleges and career paths. Respond in JSON.`;
     
@@ -97,10 +107,12 @@ export const geminiService = {
           }
         }
       });
-      return JSON.parse(response.text || '{}');
-    } catch (e) {
+      const text = response.text;
+      if (!text) throw new Error("Empty response from AI");
+      return { data: JSON.parse(text), error: null };
+    } catch (e: any) {
       console.error('Gemini error:', e);
-      return null;
+      return { data: null, error: "Career prediction unavailable at this moment." };
     }
   }
 };

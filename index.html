@@ -27,15 +27,9 @@
         border-radius: 10px;
       }
       
-      /* Advanced Keyframes */
       @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
-        to { opacity: 1; transform: translateY(0); filter: blur(0); }
-      }
-
-      @keyframes slideInRight {
-        from { opacity: 0; transform: translateX(20px); }
-        to { opacity: 1; transform: translateX(0); }
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
       }
 
       @keyframes fadeIn {
@@ -43,68 +37,23 @@
         to { opacity: 1; }
       }
 
-      @keyframes scaleIn {
-        from { opacity: 0; transform: scale(0.95); }
-        to { opacity: 1; transform: scale(1); }
-      }
-
-      @keyframes float {
-        0%, 100% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-15px) rotate(2deg); }
-      }
-
-      @keyframes shimmer {
-        0% { background-position: -200% 0; }
-        100% { background-position: 200% 0; }
-      }
-
-      @keyframes gradientMove {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-      }
-
-      /* Utility Animation Classes */
-      .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-      .animate-slide-in-right { animation: slideInRight 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+      .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
       .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
-      .animate-scale-in { animation: scaleIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-      
-      .floating { animation: float 5s ease-in-out infinite; }
-      
-      .shimmer {
-        background: linear-gradient(90deg, #f1f5f9 25%, #f8fafc 50%, #f1f5f9 75%);
-        background-size: 200% 100%;
-        animation: shimmer 2s infinite linear;
-      }
 
       .gradient-text {
-        background: linear-gradient(135deg, #0f172a 0%, #4f46e5 25%, #6366f1 50%, #4f46e5 75%, #0f172a 100%);
-        background-size: 200% auto;
+        background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        animation: gradientMove 8s linear infinite;
       }
 
-      /* Reveal on Scroll */
       .reveal {
         opacity: 0;
         transform: translateY(20px);
-        transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        transition: all 0.6s ease-out;
       }
       .reveal.active {
         opacity: 1;
         transform: translateY(0);
-      }
-
-      .stagger-item {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      .active .stagger-item {
-        opacity: 1;
-        transform: translateY(0);
-        transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
       }
     </style>
   <script type="importmap">
@@ -121,25 +70,23 @@
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="text-slate-900 overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900">
+  <body class="text-slate-900 overflow-x-hidden">
     <div id="root"></div>
     <script>
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add('active');
-            // Stagger logic
-            const children = entry.target.querySelectorAll('.stagger-item');
-            children.forEach((child, index) => {
-              child.style.transitionDelay = `${index * 0.1}s`;
-            });
           }
         });
       }, { threshold: 0.1 });
 
-      setInterval(() => {
+      const initObserver = () => {
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-      }, 500);
+      };
+      
+      setInterval(initObserver, 1000);
+      initObserver();
     </script>
   <script type="module" src="/index.tsx"></script>
 </body>

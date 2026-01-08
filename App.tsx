@@ -38,8 +38,6 @@ const Navbar: React.FC<{ user: UserSession | null }> = ({ user }) => {
   }, []);
 
   const isActive = (path: string) => location.pathname === path;
-
-  // List of paths that shouldn't show the standard navbar
   const specialPaths = ['/auth'];
   const isLandingOnly = location.pathname === '/' && !user?.isLoggedIn;
   
@@ -53,9 +51,7 @@ const Navbar: React.FC<{ user: UserSession | null }> = ({ user }) => {
             <div className="w-8 h-8 bg-slate-900 rounded-xl flex items-center justify-center text-white text-xs font-bold shadow-lg transition-transform group-hover:scale-105">
               <i className="fas fa-compass"></i>
             </div>
-            <span className="text-lg font-black tracking-tighter text-slate-900">
-              ExamCompass
-            </span>
+            <span className="text-lg font-black tracking-tighter text-slate-900">ExamCompass</span>
           </Link>
           <div className="hidden lg:flex items-center gap-8">
             {[
@@ -99,11 +95,12 @@ const Navbar: React.FC<{ user: UserSession | null }> = ({ user }) => {
 const App: React.FC = () => {
   const [user, setUser] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [globalError, setGlobalError] = useState<string | null>(null);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('ec_user');
-    if (savedUser) {
-      try {
+    try {
+      const savedUser = localStorage.getItem('ec_user');
+      if (savedUser) {
         const parsed = JSON.parse(savedUser);
         if (parsed && parsed.isLoggedIn) {
           if (parsed.expiresAt && Date.now() > parsed.expiresAt) {
@@ -113,21 +110,32 @@ const App: React.FC = () => {
             setUser(parsed);
           }
         }
-      } catch (e) {
-        console.error("Session restore error", e);
       }
+    } catch (e) {
+      console.error("Session restore error", e);
+      setGlobalError("Session restoration failed. Please login again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const login = (userData: UserSession) => {
-    localStorage.setItem('ec_user', JSON.stringify(userData));
-    setUser(userData);
+    try {
+      localStorage.setItem('ec_user', JSON.stringify(userData));
+      setUser(userData);
+      setGlobalError(null);
+    } catch (e) {
+      setGlobalError("Login failed: Storage error.");
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem('ec_user');
-    setUser(null);
+    try {
+      localStorage.removeItem('ec_user');
+      setUser(null);
+    } catch (e) {
+      setGlobalError("Logout error.");
+    }
   };
 
   if (loading) return (
@@ -141,6 +149,13 @@ const App: React.FC = () => {
     <Router>
       <div className="min-h-screen bg-white">
         <Navbar user={user} />
+        {globalError && (
+          <div className="fixed bottom-6 right-6 z-[100] bg-rose-600 text-white px-8 py-4 rounded-3xl shadow-2xl animate-fade-in-up flex items-center gap-4">
+            <i className="fas fa-exclamation-triangle"></i>
+            <span className="text-xs font-black uppercase tracking-widest">{globalError}</span>
+            <button onClick={() => setGlobalError(null)} className="ml-4 opacity-70 hover:opacity-100"><i className="fas fa-times"></i></button>
+          </div>
+        )}
         <main>
           <Routes>
             <Route path="/" element={user?.isLoggedIn ? <Navigate to="/dashboard" /> : <LandingPage />} />
@@ -153,8 +168,6 @@ const App: React.FC = () => {
             <Route path="/community" element={user?.isLoggedIn ? <Community /> : <Navigate to="/auth" />} />
             <Route path="/profile" element={user?.isLoggedIn ? <Profile user={user} onLogout={logout} /> : <Navigate to="/auth" />} />
             <Route path="/pomodoro" element={user?.isLoggedIn ? <Pomodoro /> : <Navigate to="/auth" />} />
-            
-            {/* New Information Routes */}
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/security" element={<Security />} />
