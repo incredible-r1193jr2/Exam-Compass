@@ -1,5 +1,5 @@
 
-import { Exam, ExamStream, StudyResource, Question, Milestone } from './types';
+import { Exam, ExamStream, StudyResource, Question, Milestone, Timeline, PastPaper } from './types';
 
 export const EXAMS: Exam[] = [
   {
@@ -387,4 +387,56 @@ export const MOCK_QUESTIONS: Question[] = [
     subject: 'Chemistry',
     topic: 'Surface Chemistry'
   }
+];
+
+export const EXAM_TIMELINES: Record<string, Timeline[]> = {
+  '1': [
+    { id: 't1', eventName: 'Registration Opens', date: '2026-02-15', description: 'Online registration window opens', type: 'registration', status: 'upcoming' },
+    { id: 't2', eventName: 'Registration Closes', date: '2026-03-15', description: 'Last date for registration', type: 'registration', status: 'upcoming' },
+    { id: 't3', eventName: 'Admit Card Released', date: '2026-03-20', description: 'Download admit card from official website', type: 'admit-card', status: 'upcoming' },
+    { id: 't4', eventName: 'Exam Day', date: '2026-04-10', description: 'JEE Main Exam (Session 1)', type: 'exam', status: 'upcoming' },
+    { id: 't5', eventName: 'Result Announced', date: '2026-04-25', description: 'Official results will be published', type: 'result', status: 'upcoming' },
+    { id: 't6', eventName: 'JoSAA Counselling', date: '2026-05-01', description: 'Joint counselling process starts', type: 'counselling', status: 'upcoming' }
+  ],
+  '2': [
+    { id: 't1', eventName: 'Registration Opens', date: '2026-03-01', description: 'NEET registration begins', type: 'registration', status: 'upcoming' },
+    { id: 't2', eventName: 'Registration Closes', date: '2026-03-31', description: 'Last date to apply', type: 'registration', status: 'upcoming' },
+    { id: 't3', eventName: 'Admit Card Released', date: '2026-04-10', description: 'Downloadable admit card', type: 'admit-card', status: 'upcoming' },
+    { id: 't4', eventName: 'NEET Exam', date: '2026-05-03', description: 'NEET UG examination', type: 'exam', status: 'upcoming' },
+    { id: 't5', eventName: 'Answer Key', date: '2026-05-10', description: 'Official answer key released', type: 'result', status: 'upcoming' },
+    { id: 't6', eventName: 'Result Declaration', date: '2026-06-15', description: 'Official results announced', type: 'result', status: 'upcoming' }
+  ],
+  '3': [
+    { id: 't1', eventName: 'Notification Released', date: '2026-02-01', description: 'UPSC releases official notification', type: 'registration', status: 'upcoming' },
+    { id: 't2', eventName: 'Registration Closes', date: '2026-03-15', description: 'Online application deadline', type: 'registration', status: 'upcoming' },
+    { id: 't3', eventName: 'Admit Card', date: '2026-04-15', description: 'Preliminary exam admit card', type: 'admit-card', status: 'upcoming' },
+    { id: 't4', eventName: 'Preliminary Exam', date: '2026-05-31', description: 'UPSC Civil Services Prelims', type: 'exam', status: 'upcoming' },
+    { id: 't5', eventName: 'Prelims Result', date: '2026-08-01', description: 'Preliminary results announced', type: 'result', status: 'upcoming' },
+    { id: 't6', eventName: 'Mains Exam', date: '2026-10-01', description: 'UPSC Mains written exam', type: 'exam', status: 'upcoming' }
+  ],
+  '4': [
+    { id: 't1', eventName: 'Registration Opens', date: '2025-10-01', description: 'CLAT registration begins', type: 'registration', status: 'completed' },
+    { id: 't2', eventName: 'Registration Closes', date: '2025-11-15', description: 'Last registration date', type: 'registration', status: 'completed' },
+    { id: 't3', eventName: 'Admit Card', date: '2025-11-20', description: 'Admit card released', type: 'admit-card', status: 'completed' },
+    { id: 't4', eventName: 'CLAT Exam', date: '2025-12-07', description: 'Common Law Admission Test', type: 'exam', status: 'upcoming' },
+    { id: 't5', eventName: 'Result', date: '2025-12-31', description: 'Results announced', type: 'result', status: 'upcoming' },
+    { id: 't6', eventName: 'Counselling', date: '2026-01-15', description: 'Seat allotment begins', type: 'counselling', status: 'upcoming' }
+  ]
+};
+
+export const PAST_PAPERS: PastPaper[] = [
+  { id: 'pp1', examId: '1', year: 2025, set: 1, url: '#', difficulty: 'Hard', questionsCount: 90 },
+  { id: 'pp2', examId: '1', year: 2025, set: 2, url: '#', difficulty: 'Hard', questionsCount: 90 },
+  { id: 'pp3', examId: '1', year: 2024, set: 1, url: '#', difficulty: 'Hard', questionsCount: 90 },
+  { id: 'pp4', examId: '1', year: 2024, set: 2, url: '#', difficulty: 'Hard', questionsCount: 90 },
+  { id: 'pp5', examId: '1', year: 2023, set: 1, url: '#', difficulty: 'Moderate', questionsCount: 90 },
+  { id: 'pp6', examId: '1', year: 2023, set: 2, url: '#', difficulty: 'Moderate', questionsCount: 90 },
+  { id: 'pp7', examId: '2', year: 2025, set: 1, url: '#', difficulty: 'Hard', questionsCount: 180 },
+  { id: 'pp8', examId: '2', year: 2024, set: 1, url: '#', difficulty: 'Hard', questionsCount: 180 },
+  { id: 'pp9', examId: '2', year: 2023, set: 1, url: '#', difficulty: 'Moderate', questionsCount: 180 },
+  { id: 'pp10', examId: '3', year: 2023, set: 1, url: '#', difficulty: 'Very Hard', questionsCount: 100 },
+  { id: 'pp11', examId: '3', year: 2022, set: 1, url: '#', difficulty: 'Very Hard', questionsCount: 100 },
+  { id: 'pp12', examId: '4', year: 2025, set: 1, url: '#', difficulty: 'Moderate', questionsCount: 120 },
+  { id: 'pp13', examId: '4', year: 2024, set: 1, url: '#', difficulty: 'Moderate', questionsCount: 120 },
+  { id: 'pp14', examId: '4', year: 2023, set: 1, url: '#', difficulty: 'Easy', questionsCount: 120 }
 ];

@@ -48,6 +48,15 @@ export interface Question {
   topic: string;
 }
 
+export interface Timeline {
+  id: string;
+  eventName: string;
+  date: string;
+  description: string;
+  type: 'registration' | 'admit-card' | 'exam' | 'result' | 'counselling';
+  status: 'upcoming' | 'ongoing' | 'completed';
+}
+
 export interface Milestone {
   id: string;
   userName: string;
@@ -60,4 +69,25 @@ export interface Milestone {
   type: 'achievement' | 'study-log' | 'milestone';
   category?: 'Revision' | 'Problem Solving' | 'New Concepts' | 'Mock Test';
   duration?: string;
+  likedBy?: string[];
+  commentList?: Array<{ user: string; text: string; date: string }>;
+}
+
+export interface PastPaper {
+  id: string;
+  examId: string;
+  year: number;
+  set: number;
+  url: string;
+  difficulty: 'Easy' | 'Moderate' | 'Hard';
+  questionsCount: number;
+}
+
+export interface UserProgress {
+  questionsSolved: number;
+  correctAnswers: number;
+  accuracy: number;
+  lastActive: string;
+  streakDays: number;
+  topicsCompleted: number;
 }

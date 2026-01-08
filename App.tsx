@@ -11,10 +11,28 @@ import Community from './pages/Community';
 import Profile from './pages/Profile';
 import Auth from './pages/Auth';
 import Pomodoro from './pages/Pomodoro';
+import StudyRecommendations from './pages/StudyRecommendations';
+import PersonalizedSchedule from './pages/PersonalizedSchedule';
+import AIChat from './pages/AIChat';
 import About from './pages/About';
 import Privacy from './pages/Privacy';
 import Security from './pages/Security';
 import Support from './pages/Support';
+
+// Scroll to top on route change
+const ScrollToTop: React.FC = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+  }, [location.pathname]);
+
+  return null;
+};
 
 export interface UserSession {
   name: string;
@@ -59,6 +77,8 @@ const Navbar: React.FC<{ user: UserSession | null }> = ({ user }) => {
               { name: 'Library', path: '/resources' },
               { name: 'Practice', path: '/practice' },
               { name: 'Analytics', path: '/mocks' },
+              { name: 'AI Tutor', path: '/ai-chat' },
+              { name: 'Schedule', path: '/personalized-schedule' },
               { name: 'Community', path: '/community' },
               { name: 'Focus', path: '/pomodoro' },
             ].map((link) => (
@@ -147,6 +167,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
+      <ScrollToTop />
       <div className="min-h-screen bg-white">
         <Navbar user={user} />
         {globalError && (
@@ -156,7 +177,7 @@ const App: React.FC = () => {
             <button onClick={() => setGlobalError(null)} className="ml-4 opacity-70 hover:opacity-100"><i className="fas fa-times"></i></button>
           </div>
         )}
-        <main>
+        <main className="transition-all duration-300">
           <Routes>
             <Route path="/" element={user?.isLoggedIn ? <Navigate to="/dashboard" /> : <LandingPage />} />
             <Route path="/auth" element={user?.isLoggedIn ? <Navigate to="/dashboard" /> : <Auth onLogin={login} />} />
@@ -168,6 +189,9 @@ const App: React.FC = () => {
             <Route path="/community" element={user?.isLoggedIn ? <Community /> : <Navigate to="/auth" />} />
             <Route path="/profile" element={user?.isLoggedIn ? <Profile user={user} onLogout={logout} /> : <Navigate to="/auth" />} />
             <Route path="/pomodoro" element={user?.isLoggedIn ? <Pomodoro /> : <Navigate to="/auth" />} />
+            <Route path="/ai-chat" element={user?.isLoggedIn ? <AIChat user={user} /> : <Navigate to="/auth" />} />
+            <Route path="/study-recommendations" element={user?.isLoggedIn ? <StudyRecommendations user={user} /> : <Navigate to="/auth" />} />
+            <Route path="/personalized-schedule" element={user?.isLoggedIn ? <PersonalizedSchedule user={user} /> : <Navigate to="/auth" />} />
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/security" element={<Security />} />
