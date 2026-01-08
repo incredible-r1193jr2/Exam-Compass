@@ -1,0 +1,6 @@
+
+{
+  "name": "Exam-Compass: Aspirant Intelligence Platform",
+  "description": "A comprehensive centralized platform for Indian competitive exam aspirants to track timelines, access structured resources, practice mock tests, and receive AI-driven performance insights.",
+  "requestFramePermissions": ["camera", "microphone"]
+}
