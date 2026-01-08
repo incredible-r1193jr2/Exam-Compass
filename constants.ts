@@ -69,6 +69,42 @@ export const EXAMS: Exam[] = [
       careers: ['Corporate Lawyer', 'Judge (Judiciary)', 'Legal Consultant']
     },
     syllabusHighlights: ['Legal Reasoning', 'Current Affairs & GK', 'Critical Reasoning']
+  },
+  {
+    id: '5',
+    name: 'Undergraduate Common Entrance Examination for Design',
+    shortName: 'UCEED',
+    stream: ExamStream.DESIGN,
+    difficulty: 'Moderate',
+    nextDate: '2026-01-18',
+    applicants: 15000,
+    seats: 200,
+    description: 'Admission to Bachelor of Design (B.Des) programmes at IIT Bombay, IIT Delhi, IIT Guwahati, IIT Hyderabad and IIITDM Jabalpur.',
+    cutoffTrends: [],
+    outcomes: {
+      colleges: ['IIT Bombay', 'IIT Delhi', 'IIT Guwahati'],
+      careers: ['Product Designer', 'UX/UI Designer', 'Interaction Designer']
+    },
+    syllabusHighlights: ['Visualization and Spatial Ability', 'Observation and Design Sensitivity', 'Analytical and Logical Reasoning'],
+    isComingSoon: true
+  },
+  {
+    id: '6',
+    name: 'National Defence Academy',
+    shortName: 'NDA',
+    stream: ExamStream.DEFENCE,
+    difficulty: 'Hard',
+    nextDate: '2026-04-12',
+    applicants: 400000,
+    seats: 400,
+    description: 'The Joint Services academy of the Indian Armed Forces, where cadets of the three services train together.',
+    cutoffTrends: [],
+    outcomes: {
+      colleges: ['National Defence Academy (Khadakwasla)'],
+      careers: ['Army Officer', 'Navy Officer', 'Air Force Officer']
+    },
+    syllabusHighlights: ['Mathematics', 'General Ability Test', 'English'],
+    isComingSoon: true
   }
 ];
 

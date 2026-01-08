@@ -11,6 +11,10 @@ import Community from './pages/Community';
 import Profile from './pages/Profile';
 import Auth from './pages/Auth';
 import Pomodoro from './pages/Pomodoro';
+import About from './pages/About';
+import Privacy from './pages/Privacy';
+import Security from './pages/Security';
+import Support from './pages/Support';
 
 export interface UserSession {
   name: string;
@@ -35,7 +39,11 @@ const Navbar: React.FC<{ user: UserSession | null }> = ({ user }) => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  if (location.pathname === '/auth' || (location.pathname === '/' && !user?.isLoggedIn)) return null;
+  // List of paths that shouldn't show the standard navbar
+  const specialPaths = ['/auth'];
+  const isLandingOnly = location.pathname === '/' && !user?.isLoggedIn;
+  
+  if (specialPaths.includes(location.pathname) || isLandingOnly) return null;
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-xl border-b border-slate-100 py-3' : 'bg-transparent py-5'}`}>
@@ -133,7 +141,7 @@ const App: React.FC = () => {
     <Router>
       <div className="min-h-screen bg-white">
         <Navbar user={user} />
-        <main className="pt-20">
+        <main>
           <Routes>
             <Route path="/" element={user?.isLoggedIn ? <Navigate to="/dashboard" /> : <LandingPage />} />
             <Route path="/auth" element={user?.isLoggedIn ? <Navigate to="/dashboard" /> : <Auth onLogin={login} />} />
@@ -145,6 +153,12 @@ const App: React.FC = () => {
             <Route path="/community" element={user?.isLoggedIn ? <Community /> : <Navigate to="/auth" />} />
             <Route path="/profile" element={user?.isLoggedIn ? <Profile user={user} onLogout={logout} /> : <Navigate to="/auth" />} />
             <Route path="/pomodoro" element={user?.isLoggedIn ? <Pomodoro /> : <Navigate to="/auth" />} />
+            
+            {/* New Information Routes */}
+            <Route path="/about" element={<About />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/security" element={<Security />} />
+            <Route path="/support" element={<Support />} />
           </Routes>
         </main>
       </div>

@@ -5,7 +5,9 @@ export enum ExamStream {
   CIVIL_SERVICES = 'Civil Services',
   LAW = 'Law',
   MANAGEMENT = 'Management',
-  BANKING = 'Banking'
+  BANKING = 'Banking',
+  DESIGN = 'Design',
+  DEFENCE = 'Defence'
 }
 
 export interface Exam {
@@ -24,6 +26,7 @@ export interface Exam {
     careers: string[];
   };
   syllabusHighlights: string[];
+  isComingSoon?: boolean;
 }
 
 export interface StudyResource {
