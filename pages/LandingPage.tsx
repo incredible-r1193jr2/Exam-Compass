@@ -33,9 +33,6 @@ const LandingPage: React.FC = () => {
             <span className="text-xl font-black tracking-tighter text-slate-900">ExamCompass</span>
           </Link>
           <div className="hidden md:flex items-center gap-10">
-            <a href="#how-it-works" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">Strategy</a>
-            <a href="#exams" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">Exams</a>
-            <Link to="/auth" className="text-sm font-bold text-slate-900">Sign In</Link>
             <Link to="/auth" className="px-6 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-full hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100">
               Get Started
             </Link>
