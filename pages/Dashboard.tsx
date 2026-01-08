@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
-import { EXAMS } from '../constants';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { EXAMS, EXAM_TIMELINES } from '../constants';
 import { UserSession } from '../App';
-import { Milestone } from '../types';
+import { Milestone, Timeline } from '../types';
 
 interface DashboardProps {
   user: UserSession;
@@ -82,6 +82,7 @@ const SYLLABI: Record<string, Record<string, string[]>> = {
 
 const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const query = new URLSearchParams(useLocation().search);
+  const navigate = useNavigate();
   const examId = query.get('exam') || user.targetExams[0] || '1';
   const exam = EXAMS.find(e => e.id === examId) || EXAMS[0];
 
@@ -183,6 +184,60 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         </div>
       </header>
 
+      {/* Critical Timeline Section */}
+      <section className="mb-12 bg-white rounded-[3.5rem] border border-slate-100 shadow-sm p-10 overflow-hidden">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <i className="fas fa-timeline text-indigo-600"></i>
+            Critical Timeline
+          </h2>
+          <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{exam.shortName}</span>
+        </div>
+        
+        <div className="space-y-4">
+          {(EXAM_TIMELINES[exam.id] || []).map((timeline: Timeline, index: number) => {
+            const isUpcoming = timeline.status === 'upcoming';
+            const isCompleted = timeline.status === 'completed';
+            const daysUntil = Math.ceil((new Date(timeline.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            
+            return (
+              <div key={timeline.id} className={`relative flex gap-6 pb-6 ${index !== (EXAM_TIMELINES[exam.id]?.length || 0) - 1 ? 'border-b border-slate-100' : ''}`}>
+                <div className="flex flex-col items-center gap-4">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm shadow-sm ${
+                    isCompleted ? 'bg-emerald-100 text-emerald-600' : 
+                    isUpcoming && daysUntil < 30 ? 'bg-rose-100 text-rose-600 animate-pulse' : 
+                    isUpcoming ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'
+                  }`}>
+                    {isCompleted ? <i className="fas fa-check"></i> : timeline.type === 'registration' ? <i className="fas fa-pencil"></i> : timeline.type === 'exam' ? <i className="fas fa-bookmark"></i> : <i className="fas fa-file"></i>}
+                  </div>
+                  {index !== (EXAM_TIMELINES[exam.id]?.length || 0) - 1 && (
+                    <div className="w-1 flex-grow bg-gradient-to-b from-indigo-200 to-transparent"></div>
+                  )}
+                </div>
+                
+                <div className="flex-grow pt-1">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-black text-slate-900">{timeline.eventName}</h4>
+                      <p className="text-sm text-slate-500 font-medium mt-1">{timeline.description}</p>
+                    </div>
+                    <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full whitespace-nowrap ml-4 ${
+                      isCompleted ? 'bg-emerald-50 text-emerald-600' :
+                      isUpcoming && daysUntil < 7 ? 'bg-rose-50 text-rose-600' :
+                      isUpcoming && daysUntil < 30 ? 'bg-amber-50 text-amber-600' :
+                      'bg-indigo-50 text-indigo-600'
+                    }`}>
+                      {isCompleted ? 'Done' : isUpcoming ? `${daysUntil} days` : 'Past'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 font-bold mt-2 uppercase tracking-widest">{new Date(timeline.date).toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-8 space-y-10">
           <div className="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm p-10 relative overflow-hidden">
@@ -281,11 +336,58 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 <p className="text-xl font-medium leading-relaxed mb-8 text-indigo-50">
                    "You've covered {totalCompletedAcrossAll} topics this cycle. Focusing on {subjects[0]} for 2 hours today will boost your index by 4%."
                 </p>
-                <button className="w-full py-5 bg-white text-slate-900 font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-indigo-400 hover:text-white transition-all shadow-xl active:scale-95">
+                <button onClick={() => navigate('/mock-tests')} className="w-full py-5 bg-white text-slate-900 font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-indigo-400 hover:text-white transition-all shadow-xl active:scale-95">
                    Analyze Performance <i className="fas fa-bolt ml-2"></i>
                 </button>
              </div>
              <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-600/20 rounded-full blur-[80px] -mr-20 -mt-20"></div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-sm hover:shadow-lg transition-all group">
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-all group-hover:scale-110">
+                  <i className="fas fa-calendar-alt text-xl"></i>
+                </div>
+                <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2.5 py-1 rounded-lg">OPTIMIZED</span>
+              </div>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Weekly Sessions</p>
+              <p className="text-4xl font-black text-slate-900">21</p>
+            </div>
+
+            <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-sm hover:shadow-lg transition-all group">
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-100 transition-all group-hover:scale-110">
+                  <i className="fas fa-flask text-xl"></i>
+                </div>
+                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2.5 py-1 rounded-lg">+34%</span>
+              </div>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Total Study Time</p>
+              <p className="text-4xl font-black text-slate-900">24.5h</p>
+            </div>
+
+            <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-sm hover:shadow-lg transition-all group">
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600 group-hover:bg-rose-100 transition-all group-hover:scale-110">
+                  <i className="fas fa-file-lines text-xl"></i>
+                </div>
+                <span className="text-[9px] font-black text-rose-600 uppercase tracking-widest bg-rose-50 px-2.5 py-1 rounded-lg">MOCK</span>
+              </div>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Weekly Mocks</p>
+              <p className="text-4xl font-black text-slate-900">2</p>
+            </div>
+
+            <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-sm hover:shadow-lg transition-all group">
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 group-hover:bg-purple-100 transition-all group-hover:scale-110">
+                  <i className="fas fa-circle-check text-xl"></i>
+                </div>
+                <span className="text-[9px] font-black text-purple-600 uppercase tracking-widest bg-purple-50 px-2.5 py-1 rounded-lg">ACTIVE</span>
+              </div>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Completed Today</p>
+              <p className="text-4xl font-black text-slate-900">0</p>
+            </div>
           </div>
 
           <div className="bg-white rounded-[3.5rem] border border-slate-100 p-12 shadow-sm flex flex-col items-center">

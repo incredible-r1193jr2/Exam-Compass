@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MOCK_QUESTIONS } from '../constants';
+import { useLocation } from 'react-router-dom';
+import { MOCK_QUESTIONS, PAST_PAPERS, EXAMS } from '../constants';
+import { PastPaper } from '../types';
 
 const QuestionBank: React.FC = () => {
   const [view, setView] = useState<'vault' | 'practice' | 'results'>('vault');

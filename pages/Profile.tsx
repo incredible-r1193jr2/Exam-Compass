@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserSession } from '../App';
 import { EXAMS } from '../constants';
+import { UserProgress } from '../types';
 
 interface ProfileProps {
   user: UserSession;
@@ -13,6 +14,14 @@ type SettingKey = 'notifications' | 'privacy' | 'subscription' | 'guardian' | 'f
 const Profile: React.FC<ProfileProps> = ({ user, onLogout }) => {
   const chosenExams = EXAMS.filter(e => user.targetExams.includes(e.id));
   const [activeSetting, setActiveSetting] = useState<SettingKey>(null);
+  const [userProgress, setUserProgress] = useState<UserProgress>({
+    questionsSolved: 245,
+    correctAnswers: 189,
+    accuracy: 77,
+    lastActive: new Date().toISOString().split('T')[0],
+    streakDays: 15,
+    topicsCompleted: 34
+  });
   const [settings, setSettings] = useState({
     notifications: { email: true, push: true, sms: false },
     isPrivate: false,
@@ -24,6 +33,23 @@ const Profile: React.FC<ProfileProps> = ({ user, onLogout }) => {
   useEffect(() => {
     const saved = localStorage.getItem(`ec_settings_${user.email}`);
     if (saved) setSettings(JSON.parse(saved));
+    
+    const mockTests = JSON.parse(localStorage.getItem('ec_mock_history') || '[]');
+    const benchmarks = JSON.parse(localStorage.getItem('ec_mock_benchmarks') || '[]');
+    
+    let totalSolved = mockTests.length * 30 || 0;
+    let totalCorrect = 0;
+    mockTests.forEach((test: any) => {
+      const accuracy = parseInt(test.accuracy) || 0;
+      totalCorrect += Math.round((accuracy / 100) * 30);
+    });
+    
+    setUserProgress(prev => ({
+      ...prev,
+      questionsSolved: totalSolved,
+      correctAnswers: totalCorrect,
+      accuracy: totalSolved > 0 ? Math.round((totalCorrect / totalSolved) * 100) : 77
+    }));
   }, [user.email]);
 
   const saveSettings = (newSettings: typeof settings) => {
@@ -144,7 +170,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onLogout }) => {
   };
 
   return (
-    <div className="max-w-[1000px] mx-auto px-6 py-12 animate-fade-in-up relative">
+    <div className="max-w-[1000px] mx-auto px-6 py-12 animate-fade-in-up relative lg:pt-32">
       <div className="bg-white rounded-[3.5rem] overflow-hidden shadow-sm border border-slate-100">
         <div className="h-44 bg-indigo-600 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
@@ -193,6 +219,145 @@ const Profile: React.FC<ProfileProps> = ({ user, onLogout }) => {
             <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 shadow-inner group hover:bg-white transition-all">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Standard</p>
               <p className="text-xl font-black text-slate-900 tracking-tight">{user.currentStandard}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Progress Metrics */}
+      <div className="mt-16 space-y-8">
+        <h3 className="text-3xl font-black text-slate-900 tracking-tighter px-2">Performance Metrics</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 text-xl">
+                <i className="fas fa-pencil-alt"></i>
+              </div>
+              <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">↑ 12%</span>
+            </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Questions Solved</p>
+            <p className="text-4xl font-black text-slate-900">{userProgress.questionsSolved}</p>
+            <p className="text-xs text-slate-400 font-medium mt-4">Cumulative across all mock tests</p>
+          </div>
+
+          <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 text-xl">
+                <i className="fas fa-check-circle"></i>
+              </div>
+              <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">↑ 8%</span>
+            </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Correct Answers</p>
+            <p className="text-4xl font-black text-slate-900">{userProgress.correctAnswers}</p>
+            <p className="text-xs text-slate-400 font-medium mt-4">{userProgress.accuracy}% accuracy</p>
+          </div>
+
+          <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600 text-xl">
+                <i className="fas fa-fire"></i>
+              </div>
+              <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Active</span>
+            </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Study Streak</p>
+            <p className="text-4xl font-black text-slate-900">{userProgress.streakDays} <span className="text-xs text-slate-400">days</span></p>
+            <p className="text-xs text-slate-400 font-medium mt-4">Keep the momentum going</p>
+          </div>
+
+          <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-14 h-14 bg-violet-50 rounded-2xl flex items-center justify-center text-violet-600 text-xl">
+                <i className="fas fa-star"></i>
+              </div>
+              <span className="text-[10px] font-black text-violet-600 uppercase tracking-widest">New</span>
+            </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Topics Mastered</p>
+            <p className="text-4xl font-black text-slate-900">{userProgress.topicsCompleted}</p>
+            <p className="text-xs text-slate-400 font-medium mt-4">Syllabus coverage</p>
+          </div>
+        </div>
+
+        {/* Detailed Analytics */}
+        <div className="bg-gradient-to-br from-slate-50 to-indigo-50 rounded-[3rem] p-10 border border-slate-100 shadow-sm">
+          <h4 className="text-xl font-black text-slate-900 mb-8 flex items-center gap-3">
+            <i className="fas fa-chart-line text-indigo-600"></i>
+            Accuracy Breakdown
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="flex flex-col items-center">
+              <div className="relative w-32 h-32 mb-6">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" strokeWidth="8"/>
+                  <circle 
+                    cx="60" 
+                    cy="60" 
+                    r="54" 
+                    fill="none" 
+                    stroke="url(#accuracyGradient)" 
+                    strokeWidth="8"
+                    strokeDasharray={`${(userProgress.accuracy / 100) * 339.29} 339.29`}
+                    strokeLinecap="round"
+                    className="transition-all duration-2000 ease-out"
+                  />
+                  <defs>
+                    <linearGradient id="accuracyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#4f46e5"/>
+                      <stop offset="100%" stopColor="#6366f1"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-3xl font-black text-slate-900">{userProgress.accuracy}%</p>
+                    <p className="text-[8px] font-bold text-slate-400 uppercase">Accuracy</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-bold text-slate-700">Physics</span>
+                  <span className="text-xs font-black text-indigo-600">78%</span>
+                </div>
+                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-indigo-600" style={{width: '78%'}}></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-bold text-slate-700">Chemistry</span>
+                  <span className="text-xs font-black text-emerald-600">82%</span>
+                </div>
+                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-600" style={{width: '82%'}}></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-bold text-slate-700">Mathematics</span>
+                  <span className="text-xs font-black text-rose-600">72%</span>
+                </div>
+                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-rose-600" style={{width: '72%'}}></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-[2rem] p-6 border border-slate-100">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Last Activity</p>
+              <p className="text-xl font-black text-slate-900 mb-6">{userProgress.lastActive}</p>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                  <i className="fas fa-check text-emerald-600"></i>
+                  <span className="text-xs font-bold text-slate-600">All systems active</span>
+                </div>
+                <button className="w-full py-3 bg-indigo-50 text-indigo-600 font-black text-[10px] uppercase tracking-widest rounded-lg hover:bg-indigo-100 transition-all">
+                  View Full Analytics →
+                </button>
+              </div>
             </div>
           </div>
         </div>

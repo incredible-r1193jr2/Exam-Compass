@@ -52,14 +52,52 @@ interface Message {
   type?: 'system' | 'user';
 }
 
+interface PostWithInteractions extends Milestone {
+  userLiked?: boolean;
+  localLikes?: number;
+  localComments?: { user: string; text: string; time: string }[];
+}
+
 const Community: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     { id: '3', user: 'AI Moderator', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Compass', text: "Welcome to the 2026 Study Lounge. Your progress is now public!", timestamp: '12:05 PM', type: 'system' }
   ]);
-  const [peerPosts, setPeerPosts] = useState<Milestone[]>([]);
+  const [peerPosts, setPeerPosts] = useState<PostWithInteractions[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isVoiceLoungeActive, setIsVoiceLoungeActive] = useState(false);
   const [isLoungeLoading, setIsLoungeLoading] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [commentInput, setCommentInput] = useState('');
+  const [newPostContent, setNewPostContent] = useState('');
+  const [newPostCategory, setNewPostCategory] = useState<'Victory' | 'Doubt' | 'Study'>('Study');
+  const [otherUserPosts, setOtherUserPosts] = useState<PostWithInteractions[]>([
+    {
+      id: 'other-1',
+      userName: 'Rahul Sharma',
+      userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=RahulSharma',
+      content: 'Does anyone have the simplified formula sheet for Organic Chemistry reactions?',
+      category: 'Doubt',
+      date: '2h ago',
+      likes: 42,
+      comments: 12,
+      localLikes: 42,
+      localComments: [],
+      userLiked: false
+    },
+    {
+      id: 'other-2',
+      userName: 'Ananya S.',
+      userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=AnanyaS',
+      content: 'Cleared the Level 3 Physics Mock with 94%! Persistence is key.',
+      category: 'Victory',
+      date: '5h ago',
+      likes: 128,
+      comments: 24,
+      localLikes: 128,
+      localComments: [],
+      userLiked: false
+    }
+  ]);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -70,7 +108,12 @@ const Community: React.FC = () => {
   useEffect(() => {
     const savedPosts = localStorage.getItem('ec_portfolio_posts');
     if (savedPosts) {
-      setPeerPosts(JSON.parse(savedPosts));
+      const posts = JSON.parse(savedPosts) as PostWithInteractions[];
+      posts.forEach(post => {
+        if (!post.localLikes) post.localLikes = post.likes || 0;
+        if (!post.localComments) post.localComments = [];
+      });
+      setPeerPosts(posts);
     }
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -114,6 +157,61 @@ const Community: React.FC = () => {
     };
     setMessages(prev => [...prev, newMessage]);
     setInputValue('');
+  };
+
+  const handleLike = (postId: string) => {
+    setPeerPosts(prev => prev.map(post => 
+      post.id === postId 
+        ? { 
+            ...post, 
+            userLiked: !post.userLiked,
+            localLikes: (post.localLikes || 0) + (post.userLiked ? -1 : 1)
+          }
+        : post
+    ));
+  };
+
+  const handleAddComment = (postId: string) => {
+    if (!commentInput.trim()) return;
+    setPeerPosts(prev => prev.map(post => 
+      post.id === postId 
+        ? { 
+            ...post, 
+            localComments: [
+              ...(post.localComments || []),
+              { user: 'You', text: commentInput, time: 'now' }
+            ]
+          }
+        : post
+    ));
+    setCommentInput('');
+  };
+
+  const handleCreatePost = () => {
+    if (!newPostContent.trim()) return;
+
+    const newPost: PostWithInteractions = {
+      id: Math.random().toString(),
+      userName: 'You',
+      userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
+      content: newPostContent,
+      category: newPostCategory,
+      date: new Date().toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
+      likes: 0,
+      comments: 0,
+      localLikes: 0,
+      localComments: [],
+      userLiked: false
+    };
+
+    const updatedPosts = [newPost, ...peerPosts];
+    setPeerPosts(updatedPosts);
+    
+    // Save to localStorage
+    localStorage.setItem('ec_portfolio_posts', JSON.stringify(updatedPosts));
+    
+    setNewPostContent('');
+    setNewPostCategory('Study');
   };
 
   const toggleVoiceLounge = async () => {
@@ -189,6 +287,52 @@ const Community: React.FC = () => {
           </span>
         </header>
 
+        {/* Create Post Section */}
+        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-[3rem] border border-indigo-200 p-8 shadow-sm">
+          <h3 className="font-black text-slate-900 mb-6 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-sm">
+              <i className="fas fa-feather"></i>
+            </div>
+            Share Your Progress
+          </h3>
+          
+          <textarea
+            value={newPostContent}
+            onChange={(e) => setNewPostContent(e.target.value)}
+            placeholder="What's on your mind? Share a victory, doubt, or study tip..."
+            className="w-full bg-white border border-indigo-200 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 rounded-2xl px-6 py-4 outline-none font-medium text-slate-700 text-base transition-all resize-none h-24 mb-6"
+          />
+
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex gap-2">
+              {(['Victory', 'Doubt', 'Study'] as const).map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setNewPostCategory(cat)}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+                    newPostCategory === cat
+                      ? 'bg-slate-900 text-white shadow-lg shadow-slate-200 border-slate-900'
+                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {cat === 'Victory' && <i className="fas fa-trophy mr-2"></i>}
+                  {cat === 'Doubt' && <i className="fas fa-question-circle mr-2"></i>}
+                  {cat === 'Study' && <i className="fas fa-book mr-2"></i>}
+                  {cat}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={handleCreatePost}
+              disabled={!newPostContent.trim()}
+              className="px-8 py-3 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-100 active:scale-95"
+            >
+              <i className="fas fa-paper-plane mr-2"></i>
+              Post to Community
+            </button>
+          </div>
+        </div>
+
         {peerPosts.map((post) => (
           <div key={post.id} className="bg-white rounded-[3rem] border border-slate-100 p-10 shadow-sm group hover:shadow-md transition-all animate-fade-in-up">
             <div className="flex justify-between mb-8">
@@ -212,15 +356,60 @@ const Community: React.FC = () => {
               </div>
             )}
             <div className="flex gap-8 items-center pt-6 border-t border-slate-50">
-              <button className="flex items-center gap-2 text-slate-400 hover:text-rose-500 transition-colors group/like">
-                <i className="far fa-heart group-hover/like:scale-110 transition-transform"></i>
-                <span className="text-xs font-black">{post.likes}</span>
+              <button 
+                onClick={() => handleLike(post.id)}
+                className={`flex items-center gap-2 transition-colors group/like ${post.userLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
+              >
+                <i className={`${post.userLiked ? 'fas' : 'far'} fa-heart group-hover/like:scale-110 transition-transform`}></i>
+                <span className="text-xs font-black">{post.localLikes || post.likes}</span>
               </button>
-              <button className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 transition-colors group/comment">
+              <button 
+                onClick={() => setSelectedPostId(selectedPostId === post.id ? null : post.id)}
+                className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 transition-colors group/comment"
+              >
                 <i className="far fa-comment group-hover/comment:scale-110 transition-transform"></i>
-                <span className="text-xs font-black">{post.comments}</span>
+                <span className="text-xs font-black">{(post.localComments?.length || 0) + (post.comments || 0)}</span>
               </button>
             </div>
+
+            {/* Comments Section */}
+            {selectedPostId === post.id && (
+              <div className="mt-8 pt-8 border-t border-slate-100 animate-fade-in">
+                <h5 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-5">Comments</h5>
+                <div className="space-y-4 mb-6 max-h-48 overflow-y-auto">
+                  {post.localComments?.map((comment, i) => (
+                    <div key={i} className="flex gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 text-xs shrink-0">
+                        <i className="fas fa-user"></i>
+                      </div>
+                      <div className="flex-grow">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-black text-slate-900">{comment.user}</span>
+                          <span className="text-[8px] text-slate-400">{comment.time}</span>
+                        </div>
+                        <p className="text-sm text-slate-600 mt-1">{comment.text}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={commentInput}
+                    onChange={(e) => setCommentInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddComment(post.id)}
+                    placeholder="Add a comment..."
+                    className="flex-grow bg-slate-50 border border-slate-200 focus:border-indigo-600 focus:bg-white rounded-2xl px-4 py-3 text-sm outline-none transition-all"
+                  />
+                  <button
+                    onClick={() => handleAddComment(post.id)}
+                    className="px-4 py-3 bg-indigo-600 text-white rounded-2xl text-xs font-black hover:bg-indigo-700 transition-colors"
+                  >
+                    <i className="fas fa-paper-plane"></i>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
 
@@ -245,9 +434,60 @@ const Community: React.FC = () => {
             </div>
             <p className="text-slate-600 font-medium text-lg leading-relaxed mb-8">{post.content}</p>
             <div className="flex gap-8 items-center pt-6 border-t border-slate-50">
-              <button className="flex items-center gap-2 text-slate-400 hover:text-rose-500 transition-colors"><i className="far fa-heart"></i> <span className="text-xs font-black">{post.likes}</span></button>
-              <button className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 transition-colors"><i className="far fa-comment"></i> <span className="text-xs font-black">{post.comments}</span></button>
+              <button 
+                onClick={() => handleLike(otherUserPosts[i].id)}
+                className={`flex items-center gap-2 transition-colors group/like ${otherUserPosts[i].userLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
+              >
+                <i className={`${otherUserPosts[i].userLiked ? 'fas' : 'far'} fa-heart group-hover/like:scale-110 transition-transform`}></i>
+                <span className="text-xs font-black">{otherUserPosts[i].localLikes}</span>
+              </button>
+              <button 
+                onClick={() => setSelectedPostId(selectedPostId === otherUserPosts[i].id ? null : otherUserPosts[i].id)}
+                className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 transition-colors group/comment"
+              >
+                <i className="far fa-comment group-hover/comment:scale-110 transition-transform"></i>
+                <span className="text-xs font-black">{(otherUserPosts[i].localComments?.length || 0) + otherUserPosts[i].comments}</span>
+              </button>
             </div>
+
+            {/* Comments Section for Other User Posts */}
+            {selectedPostId === otherUserPosts[i].id && (
+              <div className="mt-8 pt-8 border-t border-slate-100 animate-fade-in">
+                <h5 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-5">Comments</h5>
+                <div className="space-y-4 mb-6 max-h-48 overflow-y-auto">
+                  {otherUserPosts[i].localComments?.map((comment, j) => (
+                    <div key={j} className="flex gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 text-xs shrink-0">
+                        <i className="fas fa-user"></i>
+                      </div>
+                      <div className="flex-grow">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-black text-slate-900">{comment.user}</span>
+                          <span className="text-[8px] text-slate-400">{comment.time}</span>
+                        </div>
+                        <p className="text-sm text-slate-600 mt-1">{comment.text}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={commentInput}
+                    onChange={(e) => setCommentInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddComment(otherUserPosts[i].id)}
+                    placeholder="Add a comment..."
+                    className="flex-grow bg-slate-50 border border-slate-200 focus:border-indigo-600 focus:bg-white rounded-2xl px-4 py-3 text-sm outline-none transition-all"
+                  />
+                  <button
+                    onClick={() => handleAddComment(otherUserPosts[i].id)}
+                    className="px-4 py-3 bg-indigo-600 text-white rounded-2xl text-xs font-black hover:bg-indigo-700 transition-colors"
+                  >
+                    <i className="fas fa-paper-plane"></i>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
