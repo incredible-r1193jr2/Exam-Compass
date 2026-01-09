@@ -90,7 +90,7 @@ exam-compass/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/exam-compass.git
+   [git clone https://github.com/yourusername/exam-compass.git](https://github.com/incredible-r1193jr2/Exam-Compass)
    cd exam-compass
    ```
 
@@ -258,3 +258,4 @@ For issues, feature requests, or general inquiries:
 ---
 
 **Made with ❤️ for exam aspirants worldwide**
+
